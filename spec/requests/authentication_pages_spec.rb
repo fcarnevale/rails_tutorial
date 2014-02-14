@@ -37,10 +37,16 @@ describe "Authentication" do
       it { should have_link('Sign out',    href: signout_path) }
       it { should_not have_link('Sign in', href: signin_path) }
 
+      describe "visiting restricted paths" do
+        before { visit new_user_path }
+        it { should have_selector('div.alert', text: 'No no no') }
+      end
+
       describe "followed by signout" do
         before { click_link "Sign out" }
         it { should have_link('Sign in') }
         it { should_not have_link('Profile') }
+        it { should_not have_link('Settings') }
       end
     end
   end
@@ -60,6 +66,17 @@ describe "Authentication" do
 
           it "should render the desired protected page" do
             expect(page).to have_title('Edit user')
+          end
+
+          describe "then signing out and back in again" do
+            before do 
+              click_link "Sign out"
+              sign_in user
+            end
+
+            it { should have_content("#{user.name}") }
+            it { should have_title(full_title("#{user.name}")) }
+            it { should_not have_title('Edit user') }
           end
         end
       end
